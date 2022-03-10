@@ -5,74 +5,72 @@ import {Component} from 'react'
 class App extends Component{
  
     state ={
-      counter: 0,
       posts:[
-        {
-          id: 1,
-          title: 'Título 1',
-          body: 'Corpo 1'
-        },
-        {
-          id: 2,
-          title: 'Título 2',
-          body: 'Corpo 2'
-        },
-        {
-          id: 3,
-          title: 'Título 3',
-          body: 'Corpo 3'
-        }
-       
+
       ]
     };
 
-    //variavel criada para zerar o timeout
-    timeoutUpdate = null;
-
     //esse é um life cicle metods
     componentDidMount(){
-     this.handleTimeout();
-     
+      this.loadPosts();
+    }
+
+    loadPosts = async () =>{
+      //utilizamos o fetch para fazer uma requisição e será esperado um response 
+      //neste caso faremos uma requisição para os posts e outra para as fotos
+      const postResponse = fetch('https://jsonplaceholder.typicode.com/posts');
+      const photosResponse = fetch('https://jsonplaceholder.typicode.com/photos');
+
+      //criamos dois arrays que irão receber os conteúdos na ordem dos responses
+      //que são obtidos através da função Promise que pega o retorno do response
+      //e passa para cada variavel separada
+      const [posts, photos] = await Promise.all([postResponse, photosResponse]);
+
+      //aqui criamos um objeto que receberá a conversão do array para
+      //o formato json
+      const postJson = await posts.json();
+      const photosJson = await photos.json();
+
+      //fazendo a união entre dois arrays utilizando o map para escolher
+      /*quais atributos do primeiro array serão utilizados, sendo que
+      iremos retornar o post e utilizando a função cover nós pegamos do 
+      segundo array o atributo que queremos */
+      const postsAndPhotos = postJson.map((post,index)=>{
+        return { ...post, cover: photosJson[index].url }
+      })
+
+      //susbstituimos o postJson que tinha somente os posts pelo postsAndPhotos
+      this.setState({posts: postsAndPhotos});
     }
 
     //é um life cicle que recebe o estado anterior ou props states
     componentDidUpdate(){
-      this.handleTimeout();
+    
     }
 
     //para apagar o lixo e não dar erro no navegador
     componentWillUnmount(){
-      //zera o time para dar erro na página quando ocorrer alteraçoes
-      clearTimeout(this.timeoutUpdate);
-    }
-
-    //função criada para atualizar o state do componente 
-    handleTimeout=()=>{
-      const {posts, counter} = this.state;
-      posts[0].title = 'o título mudou';
-
-      this.timeoutUpdate = setTimeout(() => {
-        this.setState({ 
-          posts,
-          counter: counter + 1
-        })
-      }, 1000); 
-    }
-
   
+    }
+
   render(){
-    const {posts, counter} = this.state;
+    const {posts} = this.state;
 
     return (
-      <div className="App">
-        <h1>{counter}</h1>
-       {posts.map(post=> (
-         <div key={post.id}>
-            <h1>{post.title}</h1>
-            <p>{post.body}</p>
-         </div>        
-        ))}
-      </div>
+      <section className='container'>
+        <div className="App, posts">     
+          {posts.map(post=> (
+            <div className='post'>
+              <img src={post.cover} alt={post.title} />
+              <div key={post.id} className='post-content'>
+                <h1>{post.title}</h1>
+                <p>{post.body}</p>
+              </div>
+            </div>                    
+          ))}
+        </div>
+      </section>
+      
     );
   }
 }

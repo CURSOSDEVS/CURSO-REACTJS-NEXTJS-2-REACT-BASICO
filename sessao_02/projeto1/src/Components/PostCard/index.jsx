@@ -1,3 +1,5 @@
+import './styles.css'
+
 export const PostCard = ({post}) => {
   //para pegarmos o post que está vindo para o componente podemos fazer
   //de tres maneiras
@@ -8,7 +10,7 @@ export const PostCard = ({post}) => {
     <div className='post'>
         <img src={post.cover} alt={post.title} />
         <div className='post-content'>
-          <h1>{post.title}</h1>
+          <h1>{post.title} {post.id}</h1>
           <p>{post.body}</p>
               </div>
     </div> 

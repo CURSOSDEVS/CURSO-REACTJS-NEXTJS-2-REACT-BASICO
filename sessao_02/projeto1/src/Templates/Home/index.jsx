@@ -5,8 +5,11 @@ import {Component} from 'react';
 
 //importando os dados 
 import {loadPosts} from '../../utils/load-posts';
+
+//importando os componentes
 import { Posts } from '../../Components/Posts';
 import { Button } from '../../Components/Button';
+import {TextInput} from '../../Components/TextInput';
 
 class Home extends Component{
  
@@ -14,7 +17,8 @@ class Home extends Component{
       posts:[],
       allPosts:[],
       page:0,
-      postsPerPage: 10
+      postsPerPage: 10,
+      searchValue: ''
     };
 
     //esse é um life cicle metods
@@ -57,8 +61,26 @@ class Home extends Component{
      console.log(page, postsPerPage, nextPage, nextPage + postsPerPage);
     }
 
+    //método para realizar busca no input que recebe o evento
+    handleChange = (e)=>{
+      //destruct capturando o target do evento
+      const{value} = e.target;
+
+      //passamos o novo valor de searchValue utilizando o setState
+      this.setState({searchValue: value});
+    }
+
   render(){
-    const {posts, page, postsPerPage, allPosts } = this.state;
+    const {posts, page, postsPerPage, allPosts, searchValue } = this.state;
+
+    //variável utilizada para filtrar os posts conforme conteúdo do input
+    const filteredPosts = !!searchValue ? 
+    allPosts.filter(post => {
+      return post.title.toLowerCase().includes(
+        searchValue.toLowerCase()
+      )
+    })
+    : posts ;
 
     /*iremos determinar se existe mais posts para serem mostrados na página
     para isso vamos verificar se a página que estamos mais quantidade de posts por
@@ -66,17 +88,44 @@ class Home extends Component{
     não temos mais páginas para ir.
     vamos passar então a propriedade noMorePosts para o atributo disabled.
     */
-   const noMorePosts= page + postsPerPage >= allPosts.length;
+   const noMorePosts = page + postsPerPage >= allPosts.length;
 
     return (
       <section className='container'>
-        <Posts posts={posts} />
+        
+        {!!searchValue && (
+          <div className='search-container'>
+            <h1>Search value: {searchValue} Qtd posts: {filteredPosts.length}</h1>
+          </div>
+        )}
+        
+        <TextInput
+          onChange={this.handleChange}
+          type='search' 
+          value={searchValue}
+          placeholder='Type your search'
+        />  
+        
+        {filteredPosts.length >0 &&(
+           <Posts posts={filteredPosts} />
+        )}
+
+        {filteredPosts.length ===0 &&(
+          <p>Não existem posts :( </p>
+          
+        )}
+       
+
         <div className='button-container'>
-          <Button 
+          
+          {!searchValue &&(
+            <Button 
             text='Load more posts'
             onClick={this.loadMorePosts}
             disabled={noMorePosts}
           />
+          )}
+
         </div>
       </section>
       
